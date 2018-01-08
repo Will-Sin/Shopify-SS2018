@@ -12,7 +12,7 @@ Parse through all pages and place pages JSON into a list. Continue through all p
 JSON_pages = []
 y = 1
 while True:
-     html = urlopen('https://backend-challenge-summer-2018.herokuapp.com/challenges.json?id=2&page=' + str(y))
+     html = urlopen('https://backend-challenge-summer-2018.herokuapp.com/challenges.json?id=1&page=' + str(y))
      y += 1
      data = html.read()
      decoded = data.decode('utf-8')
