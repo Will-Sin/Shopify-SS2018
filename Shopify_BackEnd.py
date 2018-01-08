@@ -94,7 +94,7 @@ for x in placeHolder['parent']:
      tmp = [x]
      c = []
      recursion(tmp)
-     if len(c) == 1:
+     if len(c) > 0:
           final['invalid menus'].append(tmpMenu)
      else:
           final['valid menus'].append(tmpMenu)
