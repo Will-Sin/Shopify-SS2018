@@ -1,5 +1,5 @@
 '''
-Version 1.5
+Version 1.6
 '''
 
 import json
@@ -10,18 +10,17 @@ import pprint
 Parse through all pages and place pages JSON into a list. Continue through all pages until the page has no data
 '''
 json_pages = []
-y = 1
-while True:
-     html = urlopen('https://backend-challenge-summer-2018.herokuapp.com/challenges.json?id=1&page=' + str(y))
-     y += 1
-     data = html.read()
-     decoded = data.decode('utf-8')
-     json_test = json.loads(data.decode('utf-8'))
-     if len(json_test['menus']) == 0:
-          break
-     else:
-          json_pages.append(json_test)
-     
+html = urlopen('https://backend-challenge-summer-2018.herokuapp.com/challenges.json?id=1&page=1')
+raw_html = html.read()
+json_clean = json.loads(raw_html.decode('utf-8'))
+json_per_page = json_clean['pagination']['per_page']
+json_page_total = json_clean['pagination']['total']
+num_data_pages = int(json_page_total/json_per_page)
+for x in range(1, num_data_pages+1):
+     html = urlopen('https://backend-challenge-summer-2018.herokuapp.com/challenges.json?id=1&page=' + str(x))
+     raw_html = html.read()
+     json_clean = json.loads(raw_html.decode('utf-8'))
+     json_pages.append(json_clean)
      
 '''
 Parse through captured JSON data and place each node into the list Menus
