@@ -1,5 +1,5 @@
 '''
-Version 1.6
+Version 1.7
 '''
 
 import json
@@ -22,21 +22,22 @@ for x in range(1, num_data_pages+1):
      json_clean = json.loads(raw_html.decode('utf-8'))
      json_pages.append(json_clean)
      
+     
 '''
 Parse through captured JSON data and place each node into the list Menus
 '''
-menus = []
+json_menus = []
 for x in range(0, len(json_pages)):
      z = True
      y = 0
      while z == True:
           try:
-               menus.append(json_pages[int(x)]['menus'][int(y)])
+               json_menus.append(json_pages[int(x)]['menus'][int(y)])
                y += 1
           except IndexError:
                z = False
 
-def recursion(tmp):
+def recursion2(tmp):
      '''
 Function to go through current node ids (tmp) and adds new node id to tmp2 if it's parent id is in tmp.
 
@@ -48,36 +49,73 @@ the end of the menu
      print(tmp)
      tmp2 = []
      for x in place_holder['child']:
-          if menus[x-1]['parent_id'] in tmp:
-               tmp_menu['children'].append(menus[x-1]['id'])
-               tmp2.append(menus[x-1]['id'])
-               cyclical(x)
+          if json_menus[x-1]['parent_id'] in tmp:
+               
+               tmp_menu['children'].append(json_menus[x-1]['id'])
+               tmp2.append(json_menus[x-1]['id'])
+               cyclical(tmp)
+               
      if len(tmp2)  == 0:
           return
      recursion(tmp2)
      return
 
-def cyclical(x):
+def recursion(tmp, depth):
+     if depth == 5:
+          return
+     tmp2 = []
+     for x in tmp:
+          try:
+               tmp2 += json_menus[x-1]['child_ids']
+          except IndexError:
+               return
+     if len(tmp2) == 0:
+          return
+     tmp_menu['children'] += tmp2
+     cyclical()
+     depth_check.append(tmp2)
+     print(tmp2, 'tmp2')
+     print(tmp_menu)
+     if len(depth_check) == 4:
+          return
+     depth += 1
+     recursion(tmp2, depth)
+
+def cyclical():
      '''
-Checks if node's child id is less than itself, if so, we know node is cyclical.
+Check if root ID is in children == cyclical
 
-Appends 1 to list c to notify that entire menu is cyclical.
+Check if there's duplicates in children == cyclical
 '''
-     if len(menus[x-1]['child_ids']) > 0:
-          for y in menus[x-1]['child_ids']:
-               if y < menus[x-1]['id']:
-                    c.append(1)
+     if tmp_menu['root_id'][0] in tmp_menu['children']:
+          cyclical_notifier.append(1)
+     if len(tmp_menu['children']) != len(set(tmp_menu['children'])):
+          cyclical_notifier.append(1)
 
+          '''
+     for y in tmp_list_of_ids:
+          print(y)
+          print(tmp2, 'tmp2')
+          if y in tmp2:
+               print(y, 'cyc')
+               cyclical_notifier.append(1)
+
+     
+     if len(json_menus[x-1]['child_ids']) > 0:
+          for y in json_menus[x-1]['child_ids']:
+               if y < json_menus[x-1]['id']:
+                    c.append(1)
+'''
 '''
 Creates dictionary to seperate nodes that are parents, and nodes that are children. 
 '''
 
 place_holder = {'parent': [], 'child': []}
-for x in range(0, len(menus)):
-     if 'parent_id' in menus[x]:
-          place_holder['child'].append(menus[x]['id'])
+for x in range(0, len(json_menus)):
+     if 'parent_id' in json_menus[x]:
+          place_holder['child'].append(json_menus[x]['id'])
      else:
-          place_holder['parent'].append(menus[x]['id'])
+          place_holder['parent'].append(json_menus[x]['id'])
 
 '''
 Goes through all parent ID's and checks every child node to connect them to it's parent ID.
@@ -87,16 +125,17 @@ Checks c list to see if cyclical or not. Refer to cyclical() function
 Appends menu to final dictionary as either a valid or invalid menu.
 '''
           
-final = {'valid menus': [], 'invalid menus': []}
+json_final = {'valid menus': [], 'invalid menus': []}
 for x in place_holder['parent']:
      tmp_menu= {'root_id': [x], 'children': []}
      tmp = [x]
-     c = []
-     recursion(tmp)
-     if len(c) > 0:
-          final['invalid menus'].append(tmp_menu)
+     cyclical_notifier = []
+     depth_check = []
+     recursion(tmp, 1)
+     if len(cyclical_notifier) > 0:
+          json_final['invalid menus'].append(tmp_menu)
      else:
-          final['valid menus'].append(tmp_menu)
+          json_final['valid menus'].append(tmp_menu)
                     
 def p_print(data):
      '''
